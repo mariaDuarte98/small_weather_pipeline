@@ -1,6 +1,6 @@
 .vscode
-my-env
 .env
 .airflow
 data/weather_partitioned/
 requirments_airflow.txt
+my-env-final/
