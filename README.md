@@ -2,14 +2,7 @@
 
 This project is a data engineering pipeline, orchestrated with **Apache Airflow**, that automates the collection of historical weather data for various cities and stores it efficiently for analysis.
 
-The pipeline is built with a simple Extract, Transform, Load (ETL) workflow, fetching data from an external API and storing it in a partitioned Parquet format optimized for analytics.
-
-### Features
-
-* **Data Orchestration:** Uses Apache Airflow to schedule and manage the pipeline's workflow.
-* **Data Collection:** Extracts historical weather data from an API for a pre-defined set of cities.
-* **Efficient Storage:** Stores the data in a partitioned Parquet format, ideal for storage efficiency and query optimization.
-* **Secure Configuration:** Uses environment variables to manage API keys, ensuring project security.
+The pipeline is built with a simple Extract, Load (EL) workflow, fetching data from an external API and storing it in a partitioned Parquet format optimized for analytics.
 
 ---
 
