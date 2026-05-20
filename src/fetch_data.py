@@ -1,12 +1,13 @@
-import requests
+import logging
+from datetime import datetime
+
 import pandas as pd
 import pyarrow as pa
 import pyarrow.parquet as pq
-from src.config import OUTPUT_PARQUET, CITIES, API_KEY
-from src.utils.weather_utils import normalize_visual_crossing_data
-from datetime import timedelta, datetime
-import logging
+import requests
 
+from src.config import API_KEY, CITIES, OUTPUT_PARQUET
+from src.utils.weather_utils import normalize_visual_crossing_data
 
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
@@ -54,7 +55,7 @@ def fetch_weather(city_name: str, start_date: datetime, end_date: datetime) -> p
         logger.error(
             f"Error fetching data from Visual Crossing for {city_name}: {e}")
         return pd.DataFrame()
-    
+
 def fetch_historical_weather(start_date_str: str, end_date_str: str) -> pd.DataFrame:
     """
     Fetches historical data for all defined cities.
@@ -71,7 +72,7 @@ def fetch_historical_weather(start_date_str: str, end_date_str: str) -> pd.DataF
     if not df_list:
         logger.warning("No data fetched. Returning an empty DataFrame.")
         return pd.DataFrame()
-    
+
     return pd.concat(df_list, ignore_index=True)
 
 def save_data(df: pd.DataFrame):
@@ -89,6 +90,6 @@ if __name__ == '__main__':
     df = fetch_historical_weather("2024-09-01", "2024-10-01")
     save_data(df)
 
-    
+
 
 
