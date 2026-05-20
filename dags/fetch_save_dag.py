@@ -13,6 +13,12 @@ default_args = {
     'retry_delay': timedelta(minutes=5),
 }
 
+
+def fetch_and_save(start_date_str: str, end_date_str: str) -> None:
+    df = fetch_historical_weather(start_date_str, end_date_str)
+    save_data(df)
+
+
 with DAG(
         'fetch_weather_data',
         default_args=default_args,
@@ -20,16 +26,8 @@ with DAG(
         catchup=False,
 ) as dag:
 
-    task_fetch_historical = PythonOperator(
-        task_id='fetch_weather_data',
-        python_callable=fetch_historical_weather,
-        op_args=["{{ prev_ds }}", "{{ ds }}"])
-
-    task_train = PythonOperator(
-        task_id='save_data',
-        python_callable=save_data,
-        op_args=[task_fetch_historical.output]
+    PythonOperator(
+        task_id='fetch_and_save_weather',
+        python_callable=fetch_and_save,
+        op_args=["{{ prev_ds }}", "{{ ds }}"],
     )
-
-
-    task_fetch_historical >> task_train

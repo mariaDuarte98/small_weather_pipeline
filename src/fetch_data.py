@@ -22,7 +22,7 @@ def fetch_weather(city_name: str, start_date: datetime, end_date: datetime) -> p
         logger.error(
             f"start date time or end time is missing: start -> {start_date} end -> {end_date}"
         )
-        return
+        return pd.DataFrame()
 
     logger.info(
         f"Fetching historical data for {city_name} from {start_date.date()} to {end_date.date()}..."
@@ -30,7 +30,8 @@ def fetch_weather(city_name: str, start_date: datetime, end_date: datetime) -> p
 
     url = (
         f"https://weather.visualcrossing.com/VisualCrossingWebServices/rest/services/timeline/"
-        f"{city_name}/{start_date.strftime('%Y-%m-%d')}/{end_date.strftime('%Y-%m-%d')}?unitGroup=metric&key={API_KEY}&contentType=json" # TO DO: &include=hours
+        f"{city_name}/{start_date.strftime('%Y-%m-%d')}/{end_date.strftime('%Y-%m-%d')}"
+        f"?unitGroup=metric&key={API_KEY}&contentType=json"
     )
 
     try:
@@ -41,7 +42,7 @@ def fetch_weather(city_name: str, start_date: datetime, end_date: datetime) -> p
         daily_data = historical_data.get('days', [])
         if not daily_data:
             logger.warning(f"No daily data found for {city_name}.")
-            return
+            return pd.DataFrame()
 
         df = pd.DataFrame(daily_data)
         df = normalize_visual_crossing_data(df, city_name)
@@ -63,7 +64,7 @@ def fetch_historical_weather(start_date_str: str, end_date_str: str) -> pd.DataF
 
     df_list = []
     for city in CITIES:
-        city_df = fetch_weather(city['name'], start_date, end_date)
+        city_df = fetch_weather(city, start_date, end_date)
         if not city_df.empty:
             df_list.append(city_df)
 
@@ -74,12 +75,15 @@ def fetch_historical_weather(start_date_str: str, end_date_str: str) -> pd.DataF
     return pd.concat(df_list, ignore_index=True)
 
 def save_data(df: pd.DataFrame):
+    if df is None or df.empty:
+        logger.warning("No data to save.")
+        return
     table = pa.Table.from_pandas(df)
     pq.write_to_dataset(table,
                             root_path=OUTPUT_PARQUET,
                             partition_cols=['city', 'year', 'month'],
                             existing_data_behavior='overwrite_or_ignore')
-    logger.info(f"Data for {len(df)} saved successfully.")
+    logger.info(f"Data for {len(df)} rows saved successfully.")
 
 if __name__ == '__main__':
     df = fetch_historical_weather("2024-09-01", "2024-10-01")
