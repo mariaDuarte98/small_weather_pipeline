@@ -4,3 +4,6 @@
 data/weather_partitioned/
 requirments_airflow.txt
 my-env-final/
+__pycache__/
+.coverage
+.pytest_cache/
