@@ -2,6 +2,7 @@ from airflow import DAG
 from airflow.operators.python import PythonOperator
 from datetime import datetime, timedelta
 from src.fetch_data import fetch_historical_weather, save_data
+from src.transform import load_raw, transform_weather, save_transformed
 
 start_date = datetime(2025, 8, 2)
 
@@ -19,6 +20,12 @@ def fetch_and_save(start_date_str: str, end_date_str: str) -> None:
     save_data(df)
 
 
+def run_transform(ds: str) -> None:
+    df = load_raw(ds)
+    transformed = transform_weather(df)
+    save_transformed(transformed)
+
+
 with DAG(
         'fetch_weather_data',
         default_args=default_args,
@@ -26,8 +33,16 @@ with DAG(
         catchup=False,
 ) as dag:
 
-    PythonOperator(
+    fetch_task = PythonOperator(
         task_id='fetch_and_save_weather',
         python_callable=fetch_and_save,
         op_args=["{{ prev_ds }}", "{{ ds }}"],
     )
+
+    transform_task = PythonOperator(
+        task_id='transform_weather',
+        python_callable=run_transform,
+        op_args=["{{ ds }}"],
+    )
+
+    fetch_task >> transform_task
