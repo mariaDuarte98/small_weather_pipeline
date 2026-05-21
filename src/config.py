@@ -10,6 +10,7 @@ if not API_KEY:
     raise EnvironmentError("VC_API_KEY is not set. Add it to your .env file.")
 
 OUTPUT_PARQUET = str(Path(__file__).resolve().parents[1] / "data" / "weather_partitioned")
+OUTPUT_TRANSFORMED = str(Path(__file__).resolve().parents[1] / "data" / "weather_transformed")
 
 CITIES = [
     "Lisbon",
