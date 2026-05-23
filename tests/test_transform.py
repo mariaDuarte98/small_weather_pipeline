@@ -36,8 +36,9 @@ class TestComputeDailyAnomalies:
 
     def test_does_not_mutate_input(self):
         df = _sample_df()
+        before = df.copy()
         compute_daily_anomalies(df)
-        assert "temp_anomaly" not in df.columns
+        pd.testing.assert_frame_equal(df, before)
 
 
 class TestComputeRollingAvg:
@@ -60,8 +61,9 @@ class TestComputeRollingAvg:
 
     def test_does_not_mutate_input(self):
         df = _sample_df()
+        before = df.copy()
         compute_rolling_avg(df)
-        assert "tempmax_rolling_7d" not in df.columns
+        pd.testing.assert_frame_equal(df, before)
 
 
 class TestTransformWeather:
@@ -90,5 +92,5 @@ class TestSaveTransformed:
     def test_writes_with_correct_partition_columns(self):
         with patch("src.transform.pq.write_to_dataset") as mock_write:
             save_transformed(_sample_df())
-        mock_write.assert_called_once()
-        assert mock_write.call_args.kwargs["partition_cols"] == ["city", "year", "month"]
+            mock_write.assert_called_once()
+            assert mock_write.call_args.kwargs["partition_cols"] == ["city", "year", "month"]
