@@ -16,11 +16,13 @@ default_args = {
 
 
 def fetch_and_save(start_date_str: str, end_date_str: str) -> None:
+    """Fetch historical weather for all cities and save raw Parquet output."""
     df = fetch_historical_weather(start_date_str, end_date_str)
     save_data(df)
 
 
 def run_transform(ds: str) -> None:
+    """Load raw data for the given execution date, transform it, and save the result."""
     df = load_raw(ds)
     transformed = transform_weather(df)
     save_transformed(transformed)
