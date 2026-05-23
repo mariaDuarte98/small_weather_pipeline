@@ -9,11 +9,10 @@ from src.config import OUTPUT_PARQUET, OUTPUT_TRANSFORMED
 logger = logging.getLogger(__name__)
 
 
-def load_raw(date_str: str) -> pd.DataFrame:
-    """Read the raw Parquet dataset and filter to rows matching date_str (YYYY-MM-DD)."""
+def load_raw() -> pd.DataFrame:
+    """Read the full raw Parquet dataset for transform over the complete history."""
     try:
-        dataset = pq.read_table(OUTPUT_PARQUET).to_pandas()
-        return dataset[dataset["datetime"] == date_str]
+        return pq.read_table(OUTPUT_PARQUET).to_pandas()
     except Exception as e:
         logger.warning(f"Could not load raw data: {e}")
         return pd.DataFrame()

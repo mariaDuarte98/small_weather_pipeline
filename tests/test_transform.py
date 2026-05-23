@@ -6,6 +6,7 @@ import pytest
 from src.transform import (
     compute_daily_anomalies,
     compute_rolling_avg,
+    load_raw,
     save_transformed,
     transform_weather,
 )
@@ -20,6 +21,22 @@ def _sample_df() -> pd.DataFrame:
         "year": [2024, 2024, 2024, 2024],
         "month": [1, 1, 1, 1],
     })
+
+
+class TestLoadRaw:
+
+    def test_returns_full_dataset(self):
+        """Returns all rows from the raw Parquet dataset without filtering."""
+        with patch("src.transform.pq.read_table") as mock_read:
+            mock_read.return_value.to_pandas.return_value = _sample_df()
+            result = load_raw()
+        assert len(result) == len(_sample_df())
+
+    def test_returns_empty_df_on_read_error(self):
+        """Returns an empty DataFrame when the Parquet read raises an exception."""
+        with patch("src.transform.pq.read_table", side_effect=Exception("not found")):
+            result = load_raw()
+        assert result.empty
 
 
 class TestComputeDailyAnomalies:
