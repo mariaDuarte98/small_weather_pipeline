@@ -20,24 +20,25 @@ def load_raw(date_str: str) -> pd.DataFrame:
 
 
 def compute_daily_anomalies(df: pd.DataFrame) -> pd.DataFrame:
-    """Temperature anomaly = daily temp minus that city's mean over the dataset."""
-    city_means = df.groupby("city")["tempmax"].transform("mean")
+    """Temperature anomaly = daily average temp minus that city's mean over the dataset."""
+    city_means = df.groupby("city")["temp"].transform("mean")
     df = df.copy()
-    df["temp_anomaly"] = df["tempmax"] - city_means
+    df["temp_anomaly"] = df["temp"] - city_means
     return df
 
 
 def compute_rolling_avg(df: pd.DataFrame, window: int = 7) -> pd.DataFrame:
-    """7-day rolling average of tempmax per city, ordered by date."""
+    """7-day rolling average of daily average temp per city, ordered by date."""
     df = df.copy().sort_values(["city", "date"])
-    df["tempmax_rolling_7d"] = (
-        df.groupby("city")["tempmax"]
+    df["temp_rolling_7d"] = (
+        df.groupby("city")["temp"]
         .transform(lambda s: s.rolling(window, min_periods=1).mean())
     )
     return df
 
 
 def transform_weather(df: pd.DataFrame) -> pd.DataFrame:
+    """Run both transform steps; return empty DataFrame if input is None or empty."""
     if df is None or df.empty:
         logger.warning("No data to transform.")
         return pd.DataFrame()
@@ -47,6 +48,7 @@ def transform_weather(df: pd.DataFrame) -> pd.DataFrame:
 
 
 def save_transformed(df: pd.DataFrame) -> None:
+    """Write transformed DataFrame to partitioned Parquet; no-op on empty input."""
     if df is None or df.empty:
         logger.warning("No transformed data to save.")
         return
