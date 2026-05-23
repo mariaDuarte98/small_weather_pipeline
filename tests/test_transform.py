@@ -25,16 +25,19 @@ def _sample_df() -> pd.DataFrame:
 class TestComputeDailyAnomalies:
 
     def test_adds_temp_anomaly_column(self):
+        """Result contains a temp_anomaly column."""
         result = compute_daily_anomalies(_sample_df())
         assert "temp_anomaly" in result.columns
 
     def test_city_mean_anomaly_sums_to_zero(self):
+        """Anomalies are deviations from the city mean, so they sum to zero per city."""
         result = compute_daily_anomalies(_sample_df())
         for city in result["city"].unique():
             total = result[result["city"] == city]["temp_anomaly"].sum()
             assert abs(total) < 1e-9
 
     def test_does_not_mutate_input(self):
+        """Input DataFrame is unchanged; the function returns a copy."""
         df = _sample_df()
         before = df.copy()
         compute_daily_anomalies(df)
@@ -44,10 +47,12 @@ class TestComputeDailyAnomalies:
 class TestComputeRollingAvg:
 
     def test_adds_rolling_column(self):
+        """Result contains a temp_rolling_7d column."""
         result = compute_rolling_avg(_sample_df())
         assert "temp_rolling_7d" in result.columns
 
     def test_rolling_avg_matches_single_row(self):
+        """A single-row city has a rolling average equal to its own value."""
         df = pd.DataFrame({
             "city": ["Lisbon"],
             "date": pd.to_datetime(["2024-01-01"]),
@@ -60,6 +65,7 @@ class TestComputeRollingAvg:
         assert result["temp_rolling_7d"].iloc[0] == pytest.approx(10.0)
 
     def test_does_not_mutate_input(self):
+        """Input DataFrame is unchanged; the function returns a copy."""
         df = _sample_df()
         before = df.copy()
         compute_rolling_avg(df)
@@ -70,10 +76,12 @@ class TestTransformWeather:
 
     @pytest.mark.parametrize("invalid_input", [None, pd.DataFrame()])
     def test_returns_empty_on_invalid_input(self, invalid_input):
+        """Returns an empty DataFrame when given None or an empty DataFrame."""
         result = transform_weather(invalid_input)
         assert result.empty
 
     def test_adds_both_columns(self):
+        """Applies both transforms and returns a DataFrame with both output columns."""
         result = transform_weather(_sample_df())
         assert "temp_anomaly" in result.columns
         assert "temp_rolling_7d" in result.columns
@@ -82,11 +90,13 @@ class TestTransformWeather:
 class TestSaveTransformed:
 
     def test_does_not_write_on_empty_df(self):
+        """Skips writing to Parquet when given an empty DataFrame."""
         with patch("src.transform.pq.write_to_dataset") as mock_write:
             save_transformed(pd.DataFrame())
             mock_write.assert_not_called()
 
     def test_writes_with_correct_partition_columns(self):
+        """Partitions output by city, year, and month."""
         with patch("src.transform.pq.write_to_dataset") as mock_write:
             save_transformed(_sample_df())
             mock_write.assert_called_once()
