@@ -21,9 +21,9 @@ def fetch_and_save(start_date_str: str, end_date_str: str) -> None:
     save_data(df)
 
 
-def run_transform(ds: str) -> None:
-    """Load raw data for the given execution date, transform it, and save the result."""
-    df = load_raw(ds)
+def run_transform() -> None:
+    """Load the full raw dataset, transform it, and save the result."""
+    df = load_raw()
     transformed = transform_weather(df)
     save_transformed(transformed)
 
@@ -44,7 +44,6 @@ with DAG(
     transform_task = PythonOperator(
         task_id='transform_weather',
         python_callable=run_transform,
-        op_args=["{{ ds }}"],
     )
 
     fetch_task >> transform_task
