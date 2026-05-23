@@ -53,6 +53,16 @@ class TestComputeDailyAnomalies:
             total = result[result["city"] == city]["temp_anomaly"].sum()
             assert abs(total) < 1e-9
 
+    def test_anomaly_values_are_correct(self):
+        """Anomaly equals each row's temp minus its city mean across the dataset."""
+        result = compute_daily_anomalies(_sample_df())
+        # Lisbon: mean=(15+17)/2=16 → anomalies [-1, 1]
+        lisbon = result[result["city"] == "Lisbon"].sort_values("date")["temp_anomaly"].tolist()
+        assert lisbon == pytest.approx([-1.0, 1.0])
+        # London: mean=(5+7)/2=6 → anomalies [-1, 1]
+        london = result[result["city"] == "London"].sort_values("date")["temp_anomaly"].tolist()
+        assert london == pytest.approx([-1.0, 1.0])
+
     def test_does_not_mutate_input(self):
         """Input DataFrame is unchanged; the function returns a copy."""
         df = _sample_df()
@@ -80,6 +90,16 @@ class TestComputeRollingAvg:
         })
         result = compute_rolling_avg(df)
         assert result["temp_rolling_7d"].iloc[0] == pytest.approx(10.0)
+
+    def test_rolling_avg_values_are_correct(self):
+        """Rolling average accumulates correctly as more rows fall within the window."""
+        result = compute_rolling_avg(_sample_df())
+        # Lisbon sorted by date: day1=15 → avg 15.0; day2=17 → avg (15+17)/2=16.0
+        lisbon = result[result["city"] == "Lisbon"].sort_values("date")["temp_rolling_7d"].tolist()
+        assert lisbon == pytest.approx([15.0, 16.0])
+        # London sorted by date: day1=5 → avg 5.0; day2=7 → avg (5+7)/2=6.0
+        london = result[result["city"] == "London"].sort_values("date")["temp_rolling_7d"].tolist()
+        assert london == pytest.approx([5.0, 6.0])
 
     def test_does_not_mutate_input(self):
         """Input DataFrame is unchanged; the function returns a copy."""
