@@ -7,6 +7,7 @@ import pyarrow.parquet as pq
 import requests
 
 from src.config import API_KEY, CITIES, OUTPUT_PARQUET
+from src.utils.data_quality import run_quality_checks
 from src.utils.weather_utils import normalize_visual_crossing_data
 
 logging.basicConfig(level=logging.INFO)
@@ -79,6 +80,7 @@ def save_data(df: pd.DataFrame):
     if df is None or df.empty:
         logger.warning("No data to save.")
         return
+    run_quality_checks(df)
     table = pa.Table.from_pandas(df)
     pq.write_to_dataset(table,
                             root_path=OUTPUT_PARQUET,
