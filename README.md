@@ -1,4 +1,6 @@
-# Weather Data Pipeline 
+# Weather Data Pipeline
+
+[![CI](https://github.com/mariaDuarte98/small_weather_pipeline/actions/workflows/ci.yaml/badge.svg)](https://github.com/mariaDuarte98/small_weather_pipeline/actions/workflows/ci.yaml)
 
 This project is a data engineering pipeline, orchestrated with **Apache Airflow**, that automates the collection of historical weather data for various cities and stores it efficiently for analysis.
 
